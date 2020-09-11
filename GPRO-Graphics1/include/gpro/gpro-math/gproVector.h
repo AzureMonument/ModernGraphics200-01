@@ -80,6 +80,20 @@ union vec3
 	// Adding my(Jared) own operator / functions
 	//vec3 operator *(double t, const vec3& v); // Okay... for some reason leaving this commented out with the inline implemented works, but uncommented causes errors?
 
+	double length_squared() const { // Vector times itself
+
+		double dx = double(x);
+		double dy = double(y);
+		double dz = double(z);
+
+		return ((dx * dx) + (dy * dy) + (dz * dz));
+
+	}
+
+	vec3 operator-() const { return vec3(-x, -y, -z); } // Negative operator
+
+
+
 #endif	// __cplusplus
 };
 

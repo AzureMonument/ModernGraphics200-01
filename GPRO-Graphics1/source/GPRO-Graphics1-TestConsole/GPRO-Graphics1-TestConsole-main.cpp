@@ -26,7 +26,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "gpro/gpro-math/gproVector.h"
+//#include "gpro/gpro-math/gproVector.h"
+//#include "MathConst.h"
+#include "constMath.h"
+//#include "Hittables.h"
+#include "Hittable.h"
+
+
 
 // My own includes below
 #include <iostream>
@@ -34,7 +40,7 @@
 
 // Prototype for a function(s)
 void writeColor(std::ostream& out, vec3 pixel_color);
-vec3 rayBackground(vec3 ray_direction, const vec3 origin, const vec3 center);
+vec3 rayBackground(vec3 ray_direction, const vec3 origin, const hittable& world);
 double hit_sphere(const vec3 origin, const vec3 center, double radius, const vec3 c_direction);
 
 
@@ -79,11 +85,25 @@ int main(int const argc, char const* const argv[])
 	const int imageSize_y = 256;      */ // This is now *mostly irrelevent
 
 
+
+
+
+
 	/// IMAGE
 	// Create an aspect ratio to automatically determine height based on width.
 	const double aspect_ratio = 16.9 / 9.0;
 	const int imageSize_x = 400;
 	const int imageSize_y = static_cast<int>(imageSize_x / aspect_ratio);
+
+
+	/// WORLD
+	// Create two opbjects for the environment
+	hittable_list world;
+	world.add(make_shared<sphere>(vec3(0, 0, -1), 0.5));
+	world.add(make_shared<sphere>(vec3(0, -100.5, -1), 100));
+
+
+
 
 
 	/// CAMERA
@@ -97,8 +117,8 @@ int main(int const argc, char const* const argv[])
 	vec3 lowerLeftCorner(-(float(viewport_x)/2), -(float(viewport_y)/2), -float(focal_length)); // I do not know why the guy in the tutorial seemed to have overcomplicated this...
 
 
-	// Sphere data!
-	vec3 sphere_center(0, 0, -1);
+	// Sphere data! //// THIS IS NOW IRRELEVENT
+	//vec3 sphere_center(0, 0, -1);
 
 
 
@@ -123,7 +143,7 @@ int main(int const argc, char const* const argv[])
 			vec3 c_y(0, float(viewport_y) * float(v), 0);
 
 			vec3 c_ray = lowerLeftCorner + c_x + c_y;
-			vec3 pixel_color = rayBackground(c_ray, origin, sphere_center);
+			vec3 pixel_color = rayBackground(c_ray, origin, world);
 
 			
 
@@ -190,11 +210,11 @@ void writeColor(std::ostream& out, vec3 pixel_color) {
 
 
 // creating a function to mimic the 'ray' class shown in the tutorial, cause I don't want to bother making a class.
-vec3 rayBackground(vec3 ray_direction, const vec3 origin, const vec3 center) {
+vec3 rayBackground(vec3 ray_direction, const vec3 origin, const hittable& world) {
 
 	/*  if (hit_sphere(origin, center, 0.5, ray_direction)) {
 		return vec3(1, 0, 0); // The tutorial has this be red. I want blue
-	}  */
+	}  
 
 	float t = static_cast<float>(hit_sphere(origin, center, 0.5, ray_direction)); // Run function to set t (incase of hitting sphere)
 	if (t > 0.0) { // Check if ray hit sphere
@@ -202,13 +222,24 @@ vec3 rayBackground(vec3 ray_direction, const vec3 origin, const vec3 center) {
 		vec3 N = ((t * ray_direction) - vec3(0, 0, -1)); // This calculates the distance through the sphere I believe... I think... That or the offset of a UV. Maybe.
 		return 0.5 * vec3(N.x + 1.0f, N.y + 1.0f, N.z + 1.0f); // This will return a color map based on N for the point in question.
 
+	} */ // This bit is now irrelevent
+
+
+	hit_record rec; // Create a hit_record struct
+
+	if (world.hit(origin, ray_direction, 0, infinity, rec)) { // Checks whether the 'world' was hit by the ray
+
+		return 0.5 * (rec.normal + vec3(1, 1, 1)); // Gives a color for the world
+
 	}
 
 
-	
-	t = 0.5f * (ray_direction.y + 1.0f);
+
+
 	// The tutorial is convuluted at this point, and now I understand why autos are so hated. 
 	// I am attempting to construct something close to what he has for ray_color() in the tutorial
+
+	float t = 0.5f * (ray_direction.y + 1.0f);
 
 	float t_sub = ((1.0f - float(t)) * 1.0f); // These three lines are getting the vec3's he adds together to create a color for the ray background
 	vec3 t_p1(t_sub, t_sub, t_sub);
@@ -216,7 +247,7 @@ vec3 rayBackground(vec3 ray_direction, const vec3 origin, const vec3 center) {
 	
 	vec3 t_sum = t_p1 + t_p2; // adding the rays together
 
-	return t_sum; // return the sum
+	return t_sum; // return the sum 
 
 }
 
@@ -229,12 +260,17 @@ double hit_sphere(const vec3 origin, const vec3 center, double radius, const vec
 	vec3 oc = (origin - center); // The former is the camera and the latter is the sphere in regards to it
 
 	// Create variable needed for function
-	double a = dot(c_direction, c_direction);
+	/*  double a = dot(c_direction, c_direction);
 	double b = dot(oc, c_direction);
-	double c = dot(oc, oc) - (radius * radius);
+	double c = dot(oc, oc) - (radius * radius); */
+
+
+	double a = c_direction.length_squared();
+	double half_b = dot(oc, c_direction);
+	double c = oc.length_squared() - (radius * radius);
 
 	// Actual equation telling us if we hit the sphere depending on its outcome
-	double discriminant = (b * b) - (4 * a * c); // (I am calling it the same thing the tutorial does)
+	double discriminant = (half_b * half_b) - (4 * a * c); // (I am calling it the same thing the tutorial does)
 
 	//std::cerr << discriminant << '\n'; // Using this to check outcomes to try and figure out why sphere doesn't appear
 
@@ -245,7 +281,7 @@ double hit_sphere(const vec3 origin, const vec3 center, double radius, const vec
 		return -1.0;
 	
 	} else { 
-		return ((-b - sqrt(discriminant)) / (2.0 * a)); // This value will be used as t.
+		return (-half_b - sqrt(discriminant) / a); // This value will be used as t.
 
 	}
 

@@ -119,9 +119,15 @@ inline vec3 operator *(const vec3& v, double t) { // *operator 2 to do the same 
 
 }
 
-inline vec3 operator -(const vec3& u, const vec3& v) {
+inline vec3 operator -(const vec3& u, const vec3& v) { // Subtraction operator for vectors
 
 	return vec3(u.x - v.x, u.y - v.y, u.z - v.z);
+
+}
+
+inline vec3 operator /(vec3 v, double t) { // Divide operator
+
+	return (1 / t) * v;
 
 }
 
