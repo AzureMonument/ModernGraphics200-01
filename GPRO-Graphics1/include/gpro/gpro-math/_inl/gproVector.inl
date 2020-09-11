@@ -18,8 +18,8 @@
 	gproVector.h
 	Interface for vectors. Sets an example for C and C++ compatible headers.
 
-	Modified by: ____________
-	Modified because: ____________
+	Modified by: Jared C. Midgett
+	Modified because: Class - Lab 1
 */
 
 #ifdef _GPRO_VECTOR_H_
@@ -102,6 +102,44 @@ inline floatv vec3sum(float3 v_sum, float3 const v_lh, float3 const v_rh)
 {
 	return vec3init(v_sum, (v_lh[0] + v_rh[0]), (v_lh[1] + v_rh[1]), (v_lh[2] + v_rh[2]));
 }
+
+
+
+// My(Jared) own operator / functions (NOTE: These can be credited to Peter Shirley, as they are very similar
+
+inline vec3 operator *(double t, const vec3& v) { // * operator 1 to multiply a double across a vector
+	
+	return vec3(float(t) * v.x, float(t) * v.y, float(t) * v.x); // You know, I should really just make t a float....
+
+}
+
+inline vec3 operator *(const vec3& v, double t) { // *operator 2 to do the same as above
+
+	return t * v;
+
+}
+
+inline vec3 operator -(const vec3& u, const vec3& v) {
+
+	return vec3(u.x - v.x, u.y - v.y, u.z - v.z);
+
+}
+
+inline double dot(const vec3& u, const vec3& v) { // Dot product!
+
+	return static_cast<double>((double(u.x) * double(v.x)) + (double(u.y) * double(v.y)) + (double(u.z) * double(v.z))); // I know it is hideous, but I'm just following orders.
+
+}
+
+inline vec3 cross(const vec3& u, const vec3& v) { // Cross product!
+
+	return vec3(u.y * v.z - u.z * v.y,
+				u.z * v.x - u.x * v.z,
+				u.x * v.y - u.y * v.x);
+
+}
+
+
 
 
 #endif	// !_GPRO_VECTOR_INL_

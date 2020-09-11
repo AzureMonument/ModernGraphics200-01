@@ -18,8 +18,8 @@
 	gproVector.h
 	Interface for vectors. Sets an example for C and C++ compatible headers.
 
-	Modified by: ____________
-	Modified because: ____________
+	Modified by: Jared C. Midgett
+	Modified because: Class - Lab 1
 */
 
 #ifndef _GPRO_VECTOR_H_
@@ -75,6 +75,10 @@ union vec3
 	vec3& operator +=(vec3 const& rh);	// addition assignment operator (add other to this)
 
 	vec3 const operator +(vec3 const& rh) const;	// addition operator (get sum of this and another)
+
+
+	// Adding my(Jared) own operator / functions
+	//vec3 operator *(double t, const vec3& v); // Okay... for some reason leaving this commented out with the inline implemented works, but uncommented causes errors?
 
 #endif	// __cplusplus
 };
